@@ -64,43 +64,41 @@
 
         public Tree<T> GetDeepestLeftomostNode()
         {
-            Tree<T> leftmostKey = default;
-            int deepestLevel = 0;
-            int level = 1;
+            Tree<T> deepestNode = default;
+            Queue<Tree<T>> queue = new Queue<Tree<T>>();
+            queue.Enqueue(this);
 
-            return FindDeepestKey(level, deepestLevel, children, leftmostKey);
-        }
-
-        private Tree<T> FindDeepestKey(int Level, int deepestLevel, 
-            List<Tree<T>> children, Tree<T> leftmostKey)
-        {
-            foreach (var child in children)
+            while (queue.Count != 0)
             {
-                if(Level > deepestLevel)
+                Tree<T> current = queue.Dequeue();
+                current.children.Reverse();
+
+                foreach (var child in current.children)
                 {
-                    deepestLevel = Level;
-                    leftmostKey = child;
+                    queue.Enqueue(child);
                 }
 
-                FindDeepestKey(Level + 1, deepestLevel, child.children, leftmostKey);
+                if (queue.Count == 0)
+                {
+                    deepestNode = current;
+                }
             }
-
-            return leftmostKey;
+            return deepestNode;
         }
 
         public List<T> GetLeafKeys()
         {
-            List<T> leafs = GetLeafs(children, new List<T>());
-            return leafs.OrderBy(x => x).ToList();
+            List<Tree<T>> leafs = GetLeafs(children, new List<Tree<T>>());
+            return leafs.Select(n => n.Key).OrderBy(x => x).ToList();
         }
 
-        private List<T> GetLeafs(List<Tree<T>> children, List<T> leafs)
+        private List<Tree<T>> GetLeafs(List<Tree<T>> children, List<Tree<T>> leafs)
         {
             foreach (var child in children)
             {
                 if (child.children.Count == 0)
                 {
-                    leafs.Add(child.Key);
+                    leafs.Add(child);
                 }
                 else
                 {
@@ -135,17 +133,70 @@
 
         public List<T> GetLongestPath()
         {
-            throw new NotImplementedException();
+            List<T> path = new List<T>();
+            Tree<T> deepstNode = GetDeepestLeftomostNode();
+            Tree<T> currentNode = deepstNode;
+            
+            while (currentNode!= null)
+            {
+                path.Add(currentNode.Key);
+                currentNode = currentNode.Parent;
+            }
+
+            path.Reverse();
+            return path;
         }
 
         public List<List<T>> PathsWithGivenSum(int sum)
         {
-            throw new NotImplementedException();
+            List<List<T>> paths = new List<List<T>>();
+            List<Tree<T>> leafs = GetLeafs(children, new List<Tree<T>>());
+            
+            foreach (var leaf in leafs)
+            {
+                List<T> currentPath = new List<T>();
+                Tree<T> node = leaf;
+
+                while (node != null)
+                {
+                    currentPath.Add(node.Key);
+                    node = node.Parent;
+                }
+                int currentSum = currentPath.Sum(n => int.Parse(n.ToString()));
+
+                if (sum == currentSum)
+                {
+                    currentPath.Reverse();
+                    paths.Add(currentPath);
+                }
+            }
+
+            return paths;
         }
 
         public List<Tree<T>> SubTreesWithGivenSum(int sum)
         {
-            throw new NotImplementedException();
+            List<Tree<T>> roots = new List<Tree<T>>();
+            GetSubTreesWithSumDFS(this, roots, sum);
+
+            return roots;
+        }
+
+        private int GetSubTreesWithSumDFS(Tree<T> node, List<Tree<T>> roots, int sum)
+        {
+            int currentSum = Convert.ToInt32(node.Key);
+
+            foreach (var child in node.children)
+            {
+                currentSum += GetSubTreesWithSumDFS(child, roots, sum);
+            }
+
+            if (currentSum == sum)
+            {
+                roots.Add(node);
+            }
+
+            return currentSum;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Tree
 {
@@ -22,6 +23,11 @@ namespace Tree
             Tree<int> root = tree.CreateTreeFromStrings(input);
             Console.WriteLine(root.GetAsString());
             Console.WriteLine(string.Join(' ', root.GetLeafKeys()));
+
+            List<List<int>> paths = root.PathsWithGivenSum(27);
+            List<Tree<int>> subTrees = root.SubTreesWithGivenSum(43);
+            Console.WriteLine(string.Join(' ', root.GetLongestPath()));
+            ;
         }
     }
 }
